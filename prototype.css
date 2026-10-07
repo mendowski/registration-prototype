@@ -178,7 +178,10 @@ a { color: var(--text-body-link); }
   background: var(--background-surface);
   font: 400 14px/20px var(--font-sans);
 }
-.anvil-card .anvil-illo { display: block; }
+/* Card spot circle colors (Anvil defaults to purple-subdued) */
+.spot-aqua  .anvil-card__spot { background: var(--illustration-spot-background-aqua-subdued); }
+.spot-berry .anvil-card__spot { background: var(--illustration-spot-background-berry-subdued); }
+.spot-green .anvil-card__spot { background: var(--illustration-spot-background-green-subdued); }
 
 /* Home */
 .home-top { display: flex; align-items: center; gap: 4px; padding: 4px 16px 8px 8px; }

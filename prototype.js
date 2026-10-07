@@ -98,8 +98,10 @@
     return h("a", { href: "#", onClick: function (e) { e.preventDefault(); } }, props.children);
   }
 
-  function Spot(name, bg) {
-    return h(A.Illustration, { name: name, background: bg || "purple-subdued", alt: "" });
+  // Card spot image: the Card draws the circle, so pass only the artwork URL.
+  // The circle color comes from a spot-* class (see prototype.css).
+  function cardSpot(name) {
+    return { type: "spot", src: A.Illustration.url("spot", name), alt: "" };
   }
 
   /* ------------------------------------------------------------------
@@ -156,7 +158,8 @@
   function PlanCard(name, title, body, needsQualifying, bg) {
     return h(A.Card, {
       key: title, header: title, headerAs: "h3",
-      image: { type: "spot", node: Spot(name, bg) }
+      className: bg ? "spot-" + bg : undefined,
+      image: cardSpot(name)
     },
       h("p", { className: "body-default" }, body),
       needsQualifying ? h("span", { className: "tag" }, "Qualification required") : null);
@@ -175,9 +178,9 @@
           PlanCard("hypertension-management-htn", "Hypertension Management", "Get a blood pressure monitor, tips based on your trends and detailed health reports.", true)),
         h("h2", { className: "heading-heading-2 section-title" }, "More care options"),
         h("div", { className: "stack" },
-          PlanCard("doctor-1", "Primary Care", "Meet with a primary care provider for health concerns, ongoing support, annual checkups, lab orders and referrals.", false, "aqua-subdued"),
-          PlanCard("doctor-2", "24/7 Care", "Meet with a care provider as soon as possible for non-emergency needs such as sinus infections and colds.", false, "berry-subdued"),
-          PlanCard("mental-health", "Mental Health", "Get personalized support for stress, anxiety, depression and more from a therapist or psychiatrist.", false, "green-subdued")),
+          PlanCard("doctor-1", "Primary Care", "Meet with a primary care provider for health concerns, ongoing support, annual checkups, lab orders and referrals.", false, "aqua"),
+          PlanCard("doctor-2", "24/7 Care", "Meet with a care provider as soon as possible for non-emergency needs such as sinus infections and colds.", false, "berry"),
+          PlanCard("mental-health", "Mental Health", "Get personalized support for stress, anxiety, depression and more from a therapist or psychiatrist.", false, "green")),
         h(Foot, { sticky: true }, h(Primary, { onClick: p.next }, "Next"))));
   }
 
@@ -240,7 +243,7 @@
         h("div", { className: "stack" },
           h(A.Card, {
             eyebrow: "Formerly Livongo", header: "Condition Management", headerAs: "h3",
-            image: { type: "spot", node: Spot("condition-management") },
+            image: cardSpot("condition-management"),
             footer: h(A.Button, { variant: "secondary" }, "Explore programs")
           },
             h("p", { className: "body-default" }, "Personalized programs including:"),
@@ -250,7 +253,8 @@
               h("li", null, "One-on-one coaching"))),
           h(A.Card, {
             header: "Primary Care", headerAs: "h3",
-            image: { type: "spot", node: Spot("primary-care", "aqua-subdued") },
+            className: "spot-aqua",
+            image: cardSpot("primary-care"),
             footer: h(A.Button, { variant: "secondary" }, "Schedule a visit")
           }, h("p", { className: "body-default" }, "Your provider: Dr. April Gonzalez. Video or phone visits, usually within a few days.")))),
       h("nav", { className: "tabbar", "aria-label": "App" },
