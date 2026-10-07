@@ -4,7 +4,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; }
 body {
-  background: var(--background-subdued);
+  background: var(--background-base);
   color: var(--text-body-base);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
