@@ -71,7 +71,7 @@
     var value = st[0], setValue = st[1];
     var control = h("div", { className: "anvil-input select" + (value ? "" : " is-placeholder") },
       h("select", {
-        id: idRef.current, className: "anvil-input__native", value: value,
+        id: idRef.current, className: "anvil-input__native", value: value, required: props.required,
         "aria-label": props.label ? undefined : props.ariaLabel,
         onChange: function (e) { setValue(e.target.value); }
       },
@@ -86,12 +86,39 @@
       control);
   }
 
+  // Footer: the last child (the primary button) sticks to the bottom of the screen.
+  // Anything before it (help text, links) sits in the normal flow just above.
   function Foot(props) {
-    return h("div", { className: "as-foot" + (props.sticky ? " as-foot--sticky" : "") }, props.children);
+    var kids = React.Children.toArray(props.children);
+    var button = kids.pop();
+    return h(React.Fragment, null,
+      h("div", { className: "as-foot" }, kids),
+      h("div", { className: "as-foot--sticky" }, button));
   }
 
   function Primary(props) {
-    return h(A.Button, { variant: "primary", className: "full", onClick: props.onClick }, props.children);
+    return h(A.Button, { variant: "primary", className: "full", onClick: props.onClick, disabled: props.disabled }, props.children);
+  }
+
+  // Keeps a screen's main button disabled until its required fields are filled.
+  // Checks every input or select marked required inside the screen, plus any
+  // fields listed by name (Anvil's PasswordInput and Checkbox don't take "required").
+  function useRequired(names) {
+    var ref = useRef(null);
+    var st = useState(false), ready = st[0], setReady = st[1];
+    function check() {
+      var root = ref.current;
+      if (!root) return;
+      var ok = Array.prototype.every.call(root.querySelectorAll("input[required], select[required]"),
+        function (el) { return el.value.trim() !== "" && el.checkValidity(); });
+      ok = ok && (names || []).every(function (n) {
+        var el = root.querySelector('[name="' + n + '"]');
+        return el && (el.type === "checkbox" ? el.checked : el.value.trim() !== "");
+      });
+      setReady(ok);
+    }
+    useEffect(check, []);
+    return { ref: ref, ready: ready, events: { ref: ref, onInput: check, onChange: check, onClick: check } };
   }
 
   function Link(props) {
@@ -110,49 +137,52 @@
   var STATES = ["Alabama", "Alaska", "Arizona", "California", "Colorado", "Connecticut", "Florida", "Georgia", "Illinois", "Massachusetts", "New York", "Texas", "Washington"];
 
   function CreateAccount(p) {
-    return h("div", { className: "as-body" },
-      h("h1", { className: "heading-title as-title", style: { marginTop: 40 } }, "Create your account"),
-      h("div", { className: "form", style: { marginTop: 24 } },
-        h("div", null, h(Required), h(A.TextInput, { label: "Email*", type: "email", autoComplete: "email", inputMode: "email" })),
-        h(A.PasswordInput, { label: "Password*", mode: "create", defaultValue: "Sunshine2026", excludeWords: ["maya"] }),
-        h(A.Checkbox, null,
+    var req = useRequired(["password", "terms"]);
+    return h("div", Object.assign({ className: "as-body" }, req.events),
+      h("h1", { className: "heading-heading-1 as-title", style: { marginTop: 40 } }, "Create your account"),
+      h("div", { className: "form" },
+        h("div", null, h(Required), h(A.TextInput, { label: "Email*", type: "email", autoComplete: "email", inputMode: "email", required: true })),
+        h(A.PasswordInput, { label: "Password*", name: "password", mode: "create", defaultValue: "Sunshine2026", excludeWords: ["maya"] }),
+        h(A.Checkbox, { name: "terms" },
           "By continuing you agree to ", h(Link, null, "Teladoc’s Notice of Privacy Practices"), ", ",
           h(Link, null, "Terms of Service"), " and ",
           h(Link, null, "Notice of Nondiscrimination and Language Assistance"), ".*")),
       h(Foot, null,
         h("p", { className: "body-default center" }, "Already have an account? ", h(Link, null, "Sign in")),
-        h(Primary, { onClick: p.next }, "Next")));
+        h(Primary, { onClick: p.next, disabled: !req.ready }, "Next")));
   }
 
   function VerifyEmail(p) {
+    var req = useRequired();
     return h(React.Fragment, null,
       h(TopBar, { onBack: p.back }),
-      h("div", { className: "as-body" },
-        h("h1", { className: "heading-title as-title" }, "Verify your email"),
+      h("div", Object.assign({ className: "as-body" }, req.events),
+        h("h1", { className: "heading-heading-1 as-title" }, "Verify your email"),
         h("p", { className: "body-default as-lede" }, "Activate your account by entering the six-digit code we sent to ", h("strong", null, "maya390@gmail.com"), "."),
         h(Required),
-        h(A.TextInput, { label: "Verification code*", inputMode: "numeric", autoComplete: "one-time-code" }),
-        h("p", { className: "body-default", style: { marginTop: 16 } }, "Didn’t receive a code? ", h(A.Button, { variant: "tertiary" }, "Send again")),
+        h(A.TextInput, { label: "Verification code*", inputMode: "numeric", autoComplete: "one-time-code", required: true }),
+        h("p", { className: "body-default", style: { marginTop: "var(--space-between-forms)" } }, "Didn’t receive a code? ", h(A.Button, { variant: "tertiary" }, "Send again")),
         h(Foot, null,
           h("p", { className: "body-default center" }, "Need help? Call us at ", h("a", { href: "tel:8008352362" }, "800-835-2362"), "."),
-          h(Primary, { onClick: p.next }, "Verify"))));
+          h(Primary, { onClick: p.next, disabled: !req.ready }, "Verify"))));
   }
 
   function AboutYou(p) {
+    var req = useRequired();
     return h(React.Fragment, null,
       h(TopBar, { onBack: p.back }),
-      h("div", { className: "as-body" },
-        h("h1", { className: "heading-title as-title" }, "Tell us about yourself"),
+      h("div", Object.assign({ className: "as-body" }, req.events),
+        h("h1", { className: "heading-heading-1 as-title" }, "Tell us about yourself"),
         h("p", { className: "body-default as-lede" }, "This information helps us find your coverage."),
         h(Required),
         h("div", { className: "form" },
-          h(A.TextInput, { label: "Legal first name*", autoComplete: "given-name" }),
-          h(A.TextInput, { label: "Legal last name*", autoComplete: "family-name" }),
-          h(A.TextInput, { label: "Date of birth*", helper: "MM/DD/YYYY", inputMode: "numeric", autoComplete: "bday" }),
-          h(Select, { label: "Country*", defaultValue: "United States of America", options: ["United States of America", "Canada", "Mexico"] }),
-          h(A.TextInput, { label: "ZIP code*", helper: "01234 or 01234-6789", inputMode: "numeric", autoComplete: "postal-code" }),
+          h(A.TextInput, { label: "Legal first name*", autoComplete: "given-name", required: true }),
+          h(A.TextInput, { label: "Legal last name*", autoComplete: "family-name", required: true }),
+          h(A.TextInput, { label: "Date of birth*", helper: "MM/DD/YYYY", inputMode: "numeric", autoComplete: "bday", required: true }),
+          h(Select, { label: "Country*", required: true, defaultValue: "United States of America", options: ["United States of America", "Canada", "Mexico"] }),
+          h(A.TextInput, { label: "ZIP code*", helper: "01234 or 01234-6789", inputMode: "numeric", autoComplete: "postal-code", required: true }),
           h(A.Checkbox, { label: "(Optional) I received a Teladoc Health code." })),
-        h(Foot, null, h(Primary, { onClick: p.next }, "Next"))));
+        h(Foot, null, h(Primary, { onClick: p.next, disabled: !req.ready }, "Next"))));
   }
 
   function PlanCard(name, title, body, needsQualifying, bg) {
@@ -169,45 +199,46 @@
     return h(React.Fragment, null,
       h(TopBar, { onBack: p.back }),
       h("div", { className: "as-body" },
-        h("h1", { className: "heading-title as-title" }, "Here’s what your plan covers"),
+        h("h1", { className: "heading-heading-1 as-title" }, "Here’s what your plan covers"),
         h("p", { className: "body-default as-lede" }, "These are covered by ", h("strong", null, "Aetna"), ".", h("br"), h(Link, null, "Not the right coverage?")),
-        h("h2", { className: "heading-heading-2 section-title" }, "Condition Management"),
+        h("h2", { className: "heading-sections section-title" }, "Condition Management"),
         h("div", { className: "stack" },
           PlanCard("diabetes-management", "Diabetes Management", "Get a blood sugar meter, unlimited strips and lancets, tips based on your trends and 24/7 support.", true),
           PlanCard("weight-management-wm2000", "Weight Management", "Get a smart scale, a personal coach and tools for tracking food and activity.", true),
           PlanCard("hypertension-management-htn", "Hypertension Management", "Get a blood pressure monitor, tips based on your trends and detailed health reports.", true)),
-        h("h2", { className: "heading-heading-2 section-title" }, "More care options"),
+        h("h2", { className: "heading-sections section-title" }, "More care options"),
         h("div", { className: "stack" },
           PlanCard("doctor-1", "Primary Care", "Meet with a primary care provider for health concerns, ongoing support, annual checkups, lab orders and referrals.", false, "aqua"),
           PlanCard("doctor-2", "24/7 Care", "Meet with a care provider as soon as possible for non-emergency needs such as sinus infections and colds.", false, "berry"),
           PlanCard("mental-health", "Mental Health", "Get personalized support for stress, anxiety, depression and more from a therapist or psychiatrist.", false, "green")),
-        h(Foot, { sticky: true }, h(Primary, { onClick: p.next }, "Next"))));
+        h(Foot, null, h(Primary, { onClick: p.next }, "Next"))));
   }
 
   function AccountSetup(p) {
+    var req = useRequired();
     return h(React.Fragment, null,
       h(TopBar, { onBack: p.back }),
-      h("div", { className: "as-body" },
-        h("h1", { className: "heading-title as-title" }, "Complete account setup"),
+      h("div", Object.assign({ className: "as-body" }, req.events),
+        h("h1", { className: "heading-heading-1 as-title" }, "Complete account setup"),
         h("p", { className: "body-default as-lede" }, "Check your info and add anything missing."),
         h(Required),
         h("div", { className: "form" },
-          h(A.TextInput, { label: "Address*", defaultValue: "1234 Nowhere Lane", autoComplete: "address-line1" }),
+          h(A.TextInput, { label: "Address*", defaultValue: "1234 Nowhere Lane", autoComplete: "address-line1", required: true }),
           h(A.TextInput, { label: "Apartment, suite, etc.", defaultValue: "Suite 22", autoComplete: "address-line2" }),
           h("div", { className: "row-2" },
-            h(A.TextInput, { label: "City*", defaultValue: "Riverside", autoComplete: "address-level2" }),
-            h(Select, { label: "State*", options: STATES })),
-          h(A.TextInput, { label: "ZIP code*", helper: "Format: 01234 or 01234-6789", defaultValue: "06830", inputMode: "numeric" }),
-          h(Select, { label: "Sex assigned at birth*", options: ["Female", "Male", "Intersex", "Prefer not to say"] }),
+            h(A.TextInput, { label: "City*", defaultValue: "Riverside", autoComplete: "address-level2", required: true }),
+            h(Select, { label: "State*", required: true, options: STATES })),
+          h(A.TextInput, { label: "ZIP code*", helper: "Format: 01234 or 01234-6789", defaultValue: "06830", inputMode: "numeric", required: true }),
+          h(Select, { label: "Sex assigned at birth*", required: true, options: ["Female", "Male", "Intersex", "Prefer not to say"] }),
           h("div", { className: "anvil-field" },
             h("div", { className: "anvil-field__labels" },
               h("label", { className: "anvil-field__label", htmlFor: "mobile" }, "Mobile number*")),
             h("div", { className: "phone-row" },
               h(Select, { ariaLabel: "Country code", defaultValue: "🇺🇸 +1", options: ["🇺🇸 +1", "🇨🇦 +1", "🇲🇽 +52"] }),
               h("div", { className: "anvil-input" },
-                h("input", { id: "mobile", className: "anvil-input__native", type: "tel", inputMode: "tel", autoComplete: "tel-national" })))),
+                h("input", { id: "mobile", className: "anvil-input__native", type: "tel", inputMode: "tel", autoComplete: "tel-national", required: true })))),
           h(A.Checkbox, { label: "(Optional) I agree to receive marketing calls and texts from Teladoc Health using an autodialer or prerecorded/artificial voice at the number I’ve provided. Consent is not required for services. I can reply STOP to opt out anytime. Message and data rates may apply." })),
-        h(Foot, null, h(Primary, { onClick: p.next }, "Complete account setup"))));
+        h(Foot, null, h(Primary, { onClick: p.next, disabled: !req.ready }, "Complete account setup"))));
   }
 
   function Task(name, label, bg) {
@@ -228,18 +259,18 @@
     return h(React.Fragment, null,
       h("div", { className: "home-top" },
         h(A.IconButton, { icon: "profile", label: "Profile" }),
-        h(A.IconButton, { icon: "mail", label: "Messages", badge: 2 }),
-        h("span", { className: "spacer" }),
-        h(A.Button, { variant: "primary" }, "Get care")),
+        h(A.IconButton, { icon: "mail", label: "Messages", badge: 2 })),
+        // "Get care" button hidden. To bring it back, add after the mail icon:
+        // h("span", { className: "spacer" }), h(A.Button, { variant: "primary" }, "Get care")
       h("div", { className: "as-body", style: { paddingTop: 8 } },
         h("div", { className: "home-sec" },
-          h("h2", { className: "heading-heading-2" }, "Next steps"),
+          h("h2", { className: "heading-sections section-title" }, "Next steps"),
           h(A.Button, { variant: "tertiary" }, "View all")),
-        h("div", { className: "stack", style: { gap: 12 } },
+        h("div", { className: "stack" },
           Task("nutrition", "Schedule a nutrition visit", "green-subdued"),
           Task("doctor-1", "Schedule a primary care visit"),
           Task("cardio-and-strength", "Exercise for 30 minutes")),
-        h("div", { className: "home-sec" }, h("h2", { className: "heading-heading-2" }, "Care options")),
+        h("div", { className: "home-sec" }, h("h2", { className: "heading-sections section-title" }, "Care options")),
         h("div", { className: "stack" },
           h(A.Card, {
             eyebrow: "Formerly Livongo", header: "Condition Management", headerAs: "h3",
@@ -257,11 +288,13 @@
             image: cardSpot("primary-care"),
             footer: h(A.Button, { variant: "secondary" }, "Schedule a visit")
           }, h("p", { className: "body-default" }, "Your provider: Dr. April Gonzalez. Video or phone visits, usually within a few days.")))),
-      h("nav", { className: "tabbar", "aria-label": "App" },
-        tabs.map(function (t) {
-          return h("a", { key: t.label, href: "#", "aria-current": t.current ? "page" : undefined, onClick: function (e) { e.preventDefault(); } },
-            h(A.Icon, { name: t.icon, size: 24, variant: t.current ? "active" : "default" }),
-            t.label);
+      // Anvil Global footer (tab bar), pinned 16px from the sides and bottom of the screen
+      h("div", { className: "gf-dock" },
+        h(A.GlobalFooter, {
+          label: "App",
+          items: tabs.map(function (t) {
+            return Object.assign({ href: "#", onClick: function (e) { e.preventDefault(); } }, t);
+          })
         })));
   }
 
@@ -383,12 +416,26 @@
         h("p", { className: "body-default" }, "Members could finish sign-up without dropping off, and if they left and came back, their progress was saved. Sign-up went from about 31 questions to about 15, and from 9 screens to 6, with zero accessibility bugs.")));
   }
 
+  var EMBED = /[?&]embed\b/.test(location.search);
+  if (EMBED) document.documentElement.classList.add("is-embed");
+
   function App() {
     var start = readHash() || { mode: "before", index: 0 };
     var ms = useState(start.mode), mode = ms[0], setMode = ms[1];
     var ps = useState({ before: start.mode === "before" ? start.index : 0, after: start.mode === "after" ? start.index : 0 });
     var pos = ps[0], setPos = ps[1];
     var screenRef = useRef(null);
+
+    // Embed mode shows the phone at its real proportions (390 x 844), scaled
+    // down to fit the height of the frame it's embedded in.
+    function fitScale() { return Math.max(0.3, Math.min(1, (window.innerHeight - 116) / 844, (window.innerWidth - 16) / 390)); }
+    var fs = useState(EMBED ? fitScale() : 1), fit = fs[0], setFit = fs[1];
+    useEffect(function () {
+      if (!EMBED) return;
+      function onResize() { setFit(fitScale()); }
+      window.addEventListener("resize", onResize);
+      return function () { window.removeEventListener("resize", onResize); };
+    }, []);
 
     var flow = mode === "before" ? BEFORE : AFTER;
     var i = Math.min(pos[mode], flow.length - 1);
@@ -423,6 +470,24 @@
     var screen = mode === "before"
       ? h(BeforeScreen, Object.assign({ key: "b" + i, screen: flow[i] }, screenProps))
       : h(AfterScreen, Object.assign({ key: "a" + i, screen: flow[i] }, screenProps));
+
+    // Embed mode (add ?embed to the address): just a small Before/After
+    // switch, the phone and Previous/Next, for showing inside a case study page.
+    if (EMBED) {
+      return h("main", { className: "embed", style: { "--embed-w": Math.max(260, Math.round(390 * fit)) + "px" } },
+        h("div", { className: "switch", role: "group", "aria-label": "Version" },
+          h("button", { type: "button", "aria-pressed": mode === "before", onClick: function () { switchTo("before"); } }, "Before"),
+          h("button", { type: "button", "aria-pressed": mode === "after", onClick: function () { switchTo("after"); } }, "After")),
+        h("div", { className: "embed-fit", style: { width: 390 * fit, height: 844 * fit } },
+          h("div", { className: "phone", style: { zoom: fit } },
+            h("div", { className: "screen", ref: screenRef, tabIndex: -1 }, screen))),
+        h("div", { className: "nav-row" },
+          h(A.Button, { variant: "tertiary", size: "small", icon: "left", iconName: "arrow-left", disabled: i === 0, onClick: function () { go(i - 1); } }, "Previous"),
+          h("span", { className: "counter", "aria-live": "polite" }, (i + 1) + " of " + flow.length),
+          last
+            ? h(A.Button, { variant: "tertiary", size: "small", icon: "right", iconName: "reload", onClick: function () { go(0); } }, "Start over")
+            : h(A.Button, { variant: "tertiary", size: "small", icon: "right", iconName: "arrow-right", onClick: function () { go(i + 1); } }, "Next")));
+    }
 
     return h("main", { className: "page" },
       h("header", { className: "intro" },
