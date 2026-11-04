@@ -475,9 +475,9 @@
     // switch, the phone and Previous/Next, for showing inside a case study page.
     if (EMBED) {
       return h("main", { className: "embed", style: { "--embed-w": Math.max(260, Math.round(390 * fit)) + "px" } },
-        h("div", { className: "switch", role: "group", "aria-label": "Version" },
-          h("button", { type: "button", "aria-pressed": mode === "before", onClick: function () { switchTo("before"); } }, "Before"),
-          h("button", { type: "button", "aria-pressed": mode === "after", onClick: function () { switchTo("after"); } }, "After")),
+        h("div", { className: "switch", role: "group", "aria-label": "Version", "data-active": mode },
+          h("button", { type: "button", "aria-pressed": mode === "after", onClick: function () { switchTo("after"); } }, "After"),
+          h("button", { type: "button", "aria-pressed": mode === "before", onClick: function () { switchTo("before"); } }, "Before")),
         h("div", { className: "embed-fit", style: { width: 390 * fit, height: 844 * fit } },
           h("div", { className: "phone", style: { zoom: fit } },
             h("div", { className: "screen", ref: screenRef, tabIndex: -1 }, screen))),
@@ -497,9 +497,11 @@
 
       h("div", { className: "stage" },
         h("section", { className: "panel panel--left", "aria-label": "Version" },
-          h("div", { className: "switch", role: "group", "aria-label": "Version" },
-            h("button", { type: "button", "aria-pressed": mode === "before", onClick: function () { switchTo("before"); } }, "Before", h("small", null, "Original")),
-            h("button", { type: "button", "aria-pressed": mode === "after", onClick: function () { switchTo("after"); } }, "After", h("small", null, "Anvil"))),
+          // Segmented control: After first, then Before. A white thumb slides to
+          // the selected side (see .switch in prototype.css).
+          h("div", { className: "switch", role: "group", "aria-label": "Version", "data-active": mode },
+            h("button", { type: "button", "aria-pressed": mode === "after", onClick: function () { switchTo("after"); } }, "After", h("small", null, "Anvil")),
+            h("button", { type: "button", "aria-pressed": mode === "before", onClick: function () { switchTo("before"); } }, "Before", h("small", null, "Original"))),
           h("p", { className: "body-small-default about" }, mode === "before"
             ? "The original flow: " + BEFORE.length + " screens, shown as screenshots. Click anywhere to see where to tap."
             : "The redesign: " + AFTER.length + " screens, built live with Anvil components, tokens and illustrations. The fields work, so try typing a password.")),
