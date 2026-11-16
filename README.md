@@ -3,15 +3,15 @@
 A clickable before-and-after prototype of the Teladoc Health registration flow, with a mini case study below it.
 
 - **Before:** the original screens, as screenshots in `before/`. Each one has an invisible hotspot on its main button. Click anywhere else on a screen to see where to tap.
-- **After:** the redesign, built live with the [Anvil design system](https://mendowski.github.io/anvil-design-system/). Its components, tokens, fonts and illustrations all load from the Anvil site, so updates to Anvil show up here automatically.
+- **After:** the redesign, built live with the [Pulse design system](https://mendowski.github.io/anvil-design-system/). Its components, tokens, fonts and illustrations all load from the Pulse site, so updates to Pulse show up here automatically.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
-| `index.html` | The page. Loads Anvil, React and the two files below |
-| `prototype.js` | Both flows (hotspot positions for the old screens, Anvil-built new screens) and the mini case study (`STATS`, `DECISIONS` and `CaseStudy`) |
-| `prototype.css` | Page layout and the phone frame, using Anvil tokens |
+| `index.html` | The page. Loads Pulse, React and the two files below |
+| `prototype.js` | Both flows (hotspot positions for the old screens, Pulse-built new screens) and the mini case study (`STATS`, `DECISIONS` and `CaseStudy`) |
+| `prototype.css` | Page layout and the phone frame, using Pulse tokens |
 | `before/` | Screenshots of the original screens |
 | `after/` | Figma exports of the redesign, for reference only. The live prototype doesn't use them |
 

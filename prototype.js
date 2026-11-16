@@ -11,7 +11,7 @@
 
   if (!A) {
     document.getElementById("app").innerHTML =
-      '<p style="padding:24px;font-family:sans-serif">The Anvil design system didn’t load. Check your connection and refresh.</p>';
+      '<p style="padding:24px;font-family:sans-serif">The Pulse design system didn’t load. Check your connection and refresh.</p>';
     return;
   }
 
@@ -354,7 +354,7 @@
     { n: "~31 → ~15", l: "questions to enroll, not counting 20 medical history questions" },
     { n: "+15%", l: "completed registrations" },
     { n: "9 → 6", l: "screens" },
-    { n: "0", l: "accessibility bugs, built 100% on Anvil" }
+    { n: "0", l: "accessibility bugs, built 100% on Pulse" }
   ];
   var DECISIONS = [
     { t: "Create the account first",
@@ -367,8 +367,8 @@
     { t: "Ask the rest only when it helps",
       p: ["The remaining questions now come after people can see their value, in a “Complete account setup” step: address, sex assigned at birth and phone number. This step helps us understand their needs and is the first step in finding all of their coverage."],
       screen: 5 },
-    { t: "Build it entirely on Anvil",
-      p: ["Using only design system components and tokens kept the flow consistent across platforms and accessible by default. This prototype is built the same way, live with Anvil components, so the fields really work."],
+    { t: "Build it entirely on Pulse",
+      p: ["Using only design system components and tokens kept the flow consistent across platforms and accessible by default. This prototype is built the same way, live with Pulse components, so the fields really work."],
       screen: null }
   ];
 
@@ -380,10 +380,10 @@
         h("p", { className: "body-default case-lede" },
           "Signing up took about 31 questions, plus 20 more about medical history, before someone could even create an account. I created the templates, designs and patterns for a shorter flow, and worked with product and design to define it. The goal was a north star for registration that connects people quickly to the services their coverage offers, or to their options if they don’t have coverage."),
         h("p", { className: "body-small-default case-meta" },
-          h("strong", null, "Role: "), "Lead Product Designer, Pulse/Anvil design system · ",
+          h("strong", null, "Role: "), "Lead Product Designer, Pulse design system · ",
           h("strong", null, "Timeline: "), "2025 · ",
           h("strong", null, "Partners: "), "Product and design · ",
-          h("strong", null, "Built with: "), "Anvil design system")),
+          h("strong", null, "Built with: "), "Pulse design system")),
 
       h("ul", { className: "case-stats" },
         STATS.map(function (s, n) {
@@ -492,8 +492,8 @@
     return h("main", { className: "page" },
       h("header", { className: "intro" },
         h("p", { className: "heading-eyebrow" }, "Teladoc Health · Registration · Mini case study"),
-        h("h1", { className: "heading-title" }, "Registration, before and after Anvil"),
-        h("p", { className: "body-default" }, "Click through the original sign-up flow, then switch to the redesign built with the Anvil design system. Tap each screen’s main button to move forward. The story behind it is below.")),
+        h("h1", { className: "heading-title" }, "Registration, before and after Pulse"),
+        h("p", { className: "body-default" }, "Click through the original sign-up flow, then switch to the redesign built with the Pulse design system. Tap each screen’s main button to move forward. The story behind it is below.")),
 
       h("div", { className: "stage" },
         h("section", { className: "panel panel--left", "aria-label": "Version" },
@@ -501,10 +501,10 @@
           // the selected side (see .switch in prototype.css).
           h("div", { className: "switch", role: "group", "aria-label": "Version", "data-active": mode },
             h("button", { type: "button", "aria-pressed": mode === "before", onClick: function () { switchTo("before"); } }, "Before", h("small", null, "Original")),
-            h("button", { type: "button", "aria-pressed": mode === "after", onClick: function () { switchTo("after"); } }, "After", h("small", null, "Anvil"))),
+            h("button", { type: "button", "aria-pressed": mode === "after", onClick: function () { switchTo("after"); } }, "After", h("small", null, "Pulse"))),
           h("p", { className: "body-small-default about" }, mode === "before"
             ? "The original flow: " + BEFORE.length + " screens, shown as screenshots. Click anywhere to see where to tap."
-            : "The redesign: " + AFTER.length + " screens, built live with Anvil components, tokens and illustrations. The fields work, so try typing a password.")),
+            : "The redesign: " + AFTER.length + " screens, built live with Pulse components, tokens and illustrations. The fields work, so try typing a password.")),
 
         h("div", { className: "device" },
           h("div", { className: "phone" },
