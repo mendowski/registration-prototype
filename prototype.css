@@ -156,15 +156,6 @@ a { color: var(--text-body-link); }
 .full { width: 100%; }
 .center { text-align: center; }
 
-/* Select, built on Anvil's field + input styles */
-.anvil-input.select { position: relative; padding-right: 8px; }
-.anvil-input.select select {
-  appearance: none; -webkit-appearance: none;
-  cursor: pointer;
-  padding-right: 28px;
-}
-.anvil-input.select .anvil-input__icon { position: absolute; right: 12px; pointer-events: none; }
-.select.is-placeholder select { color: var(--form-input-control-text-placeholder); }
 .phone-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; }
 .phone-row > *, .row-2 > * { min-width: 0; }
 .phone-row .anvil-input__native { width: 100%; }

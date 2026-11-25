@@ -63,27 +63,15 @@
     return h("p", { className: "body-small-default req" }, "*Required");
   }
 
-  // Select, built from Anvil's field and input styles (Anvil has no Select component yet).
-  var selectId = 0;
+  // Select: the Pulse Select input. A required select sends its value through a
+  // hidden input with a name, so list that name in useRequired.
   function Select(props) {
-    var idRef = useRef("sel-" + (++selectId));
-    var st = useState(props.defaultValue || "");
-    var value = st[0], setValue = st[1];
-    var control = h("div", { className: "anvil-input select" + (value ? "" : " is-placeholder") },
-      h("select", {
-        id: idRef.current, className: "anvil-input__native", value: value, required: props.required,
-        "aria-label": props.label ? undefined : props.ariaLabel,
-        onChange: function (e) { setValue(e.target.value); }
-      },
-        h("option", { value: "", disabled: true }, props.placeholder || "Select"),
-        props.options.map(function (o) { return h("option", { key: o, value: o }, o); })),
-      h("span", { className: "anvil-input__icon" }, h(A.Icon, { name: "caret-down" })));
-    if (!props.label) return control;
-    return h("div", { className: "anvil-field" },
-      h("div", { className: "anvil-field__labels" },
-        h("label", { className: "anvil-field__label", htmlFor: idRef.current }, props.label),
-        props.helper ? h("span", { className: "anvil-field__helper" }, props.helper) : null),
-      control);
+    return h(A.SelectInput, {
+      label: props.label, helper: props.helper, placeholder: props.placeholder,
+      "aria-label": props.label ? undefined : props.ariaLabel,
+      name: props.name, required: props.required,
+      defaultValue: props.defaultValue || "", options: props.options
+    });
   }
 
   // Footer: the last child (the primary button) sticks to the bottom of the screen.
@@ -102,7 +90,7 @@
 
   // Keeps a screen's main button disabled until its required fields are filled.
   // Checks every input or select marked required inside the screen, plus any
-  // fields listed by name (Anvil's PasswordInput and Checkbox don't take "required").
+  // fields listed by name (Anvil's PasswordInput, Checkbox and SelectInput don't take "required").
   function useRequired(names) {
     var ref = useRef(null);
     var st = useState(false), ready = st[0], setReady = st[1];
@@ -118,7 +106,9 @@
       setReady(ok);
     }
     useEffect(check, []);
-    return { ref: ref, ready: ready, events: { ref: ref, onInput: check, onChange: check, onClick: check } };
+    // Check again after React updates, so a choice in a Pulse select counts right away.
+    function later() { setTimeout(check, 0); }
+    return { ref: ref, ready: ready, events: { ref: ref, onInput: check, onChange: check, onClick: later, onKeyUp: later } };
   }
 
   function Link(props) {
@@ -168,7 +158,7 @@
   }
 
   function AboutYou(p) {
-    var req = useRequired();
+    var req = useRequired(["country"]);
     return h(React.Fragment, null,
       h(TopBar, { onBack: p.back }),
       h("div", Object.assign({ className: "as-body" }, req.events),
@@ -179,7 +169,7 @@
           h(A.TextInput, { label: "Legal first name*", autoComplete: "given-name", required: true }),
           h(A.TextInput, { label: "Legal last name*", autoComplete: "family-name", required: true }),
           h(A.TextInput, { label: "Date of birth*", helper: "MM/DD/YYYY", inputMode: "numeric", autoComplete: "bday", required: true }),
-          h(Select, { label: "Country*", required: true, defaultValue: "United States of America", options: ["United States of America", "Canada", "Mexico"] }),
+          h(Select, { label: "Country*", required: true, name: "country", defaultValue: "United States of America", options: ["United States of America", "Canada", "Mexico"] }),
           h(A.TextInput, { label: "ZIP code*", helper: "01234 or 01234-6789", inputMode: "numeric", autoComplete: "postal-code", required: true }),
           h(A.Checkbox, { label: "(Optional) I received a Teladoc Health code." })),
         h(Foot, null, h(Primary, { onClick: p.next, disabled: !req.ready }, "Next"))));
@@ -215,7 +205,7 @@
   }
 
   function AccountSetup(p) {
-    var req = useRequired();
+    var req = useRequired(["state", "sex"]);
     return h(React.Fragment, null,
       h(TopBar, { onBack: p.back }),
       h("div", Object.assign({ className: "as-body" }, req.events),
@@ -227,9 +217,9 @@
           h(A.TextInput, { label: "Apartment, suite, etc.", defaultValue: "Suite 22", autoComplete: "address-line2" }),
           h("div", { className: "row-2" },
             h(A.TextInput, { label: "City*", defaultValue: "Riverside", autoComplete: "address-level2", required: true }),
-            h(Select, { label: "State*", required: true, options: STATES })),
+            h(Select, { label: "State*", required: true, name: "state", options: STATES })),
           h(A.TextInput, { label: "ZIP code*", helper: "Format: 01234 or 01234-6789", defaultValue: "06830", inputMode: "numeric", required: true }),
-          h(Select, { label: "Sex assigned at birth*", required: true, options: ["Female", "Male", "Intersex", "Prefer not to say"] }),
+          h(Select, { label: "Sex assigned at birth*", required: true, name: "sex", options: ["Female", "Male", "Intersex", "Prefer not to say"] }),
           h("div", { className: "anvil-field" },
             h("div", { className: "anvil-field__labels" },
               h("label", { className: "anvil-field__label", htmlFor: "mobile" }, "Mobile number*")),
